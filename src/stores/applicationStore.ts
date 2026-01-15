@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { api } from '../services/api';
 import { Application } from '../types';
+import { isValidResponse } from '../utils/validation';
 
 interface ApplicationState {
   applications: Application[];
@@ -26,10 +27,19 @@ export const useApplicationStore = create<ApplicationState>((set) => ({
   fetchApplication: async (applicationId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const application = await api.get<Application>(`/application.one?applicationId=${applicationId}`);
-      set({ selectedApplication: application, isLoading: false });
+      const response = await api.get<Application>(`/application.one?applicationId=${applicationId}`);
+      if (isValidResponse(response)) {
+        set({ selectedApplication: response, isLoading: false });
+      } else {
+        set({
+          selectedApplication: null,
+          error: 'Application not found',
+          isLoading: false
+        });
+      }
     } catch (error: any) {
       set({
+        selectedApplication: null,
         error: error.response?.data?.message || 'Failed to fetch application',
         isLoading: false
       });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, View } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, View, ViewStyle } from 'react-native';
 import { theme } from '../theme';
 
 interface ButtonProps {
@@ -11,6 +11,7 @@ interface ButtonProps {
   loading?: boolean;
   fullWidth?: boolean;
   icon?: React.ReactNode;
+  style?: ViewStyle;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -22,6 +23,7 @@ export const Button: React.FC<ButtonProps> = ({
   loading = false,
   fullWidth = false,
   icon,
+  style,
 }) => {
   const getBackgroundColor = () => {
     if (disabled) return theme.colors.surfaceHighlight;
@@ -66,6 +68,7 @@ export const Button: React.FC<ButtonProps> = ({
         getPadding(),
         fullWidth && styles.fullWidth,
         disabled && styles.disabled,
+        style,
       ]}
       onPress={onPress}
       disabled={disabled || loading}

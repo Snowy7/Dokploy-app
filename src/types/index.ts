@@ -1,3 +1,5 @@
+export * from './credentials';
+
 export interface Project {
   projectId: string;
   name: string;
@@ -80,12 +82,12 @@ export interface RedisDatabase extends Database {
 }
 
 export interface DockerContainer {
-  Id: string;
-  Names: string[];
-  Image: string;
-  State: string;
-  Status: string;
-  Created: number;
+  containerId: string;
+  name: string;
+  image: string;
+  ports?: string;
+  state: string;
+  status: string;
 }
 
 export interface Deployment {
@@ -127,10 +129,15 @@ export interface ComposeService {
   appName: string;
   description?: string;
   composeType: 'docker-compose' | 'stack';
-  composeFile: string;
+  composeFile?: string;
   composeStatus: ApplicationStatus;
   environmentId: string;
   createdAt: string;
+  sourceType?: string;
+  repository?: string;
+  branch?: string;
+  owner?: string;
+  autoDeploy?: boolean;
 }
 
 export interface Notification {
@@ -160,4 +167,113 @@ export interface ContainerMetrics {
     rx: number;
     tx: number;
   };
+}
+
+// Swarm Types
+export interface SwarmNode {
+  ID: string;
+  Description: {
+    Hostname: string;
+    Platform: {
+      Architecture: string;
+      OS: string;
+    };
+    Resources: {
+      NanoCPUs: number;
+      MemoryBytes: number;
+    };
+    Engine: {
+      EngineVersion: string;
+    };
+  };
+  Status: {
+    State: 'ready' | 'down' | 'disconnected' | 'unknown';
+    Addr: string;
+  };
+  Spec: {
+    Role: 'manager' | 'worker';
+    Availability: 'active' | 'pause' | 'drain';
+  };
+  ManagerStatus?: {
+    Leader: boolean;
+    Reachability: 'reachable' | 'unreachable';
+    Addr: string;
+  };
+}
+
+export interface SwarmService {
+  ID: string;
+  Spec: {
+    Name: string;
+    Mode: {
+      Replicated?: { Replicas: number };
+      Global?: {};
+    };
+    TaskTemplate: {
+      ContainerSpec: {
+        Image: string;
+      };
+    };
+  };
+  ServiceStatus?: {
+    RunningTasks: number;
+    DesiredTasks: number;
+  };
+  CreatedAt: string;
+  UpdatedAt: string;
+}
+
+export interface SwarmTask {
+  ID: string;
+  ServiceID: string;
+  NodeID: string;
+  Status: {
+    State: string;
+    Timestamp: string;
+    Message: string;
+  };
+  DesiredState: string;
+  Spec: {
+    ContainerSpec: {
+      Image: string;
+    };
+  };
+}
+
+export interface SwarmInfo {
+  ID: string;
+  JoinTokens: {
+    Worker: string;
+    Manager: string;
+  };
+  Spec: {
+    Name: string;
+  };
+}
+
+// Monitoring Types
+export interface SystemStats {
+  cpu: {
+    usage: number;
+    cores: number;
+  };
+  memory: {
+    used: number;
+    total: number;
+    percentage: number;
+  };
+  disk: {
+    used: number;
+    total: number;
+    percentage: number;
+  };
+  uptime?: number;
+}
+
+export interface ApplicationWithDomains extends Application {
+  domains?: Domain[];
+}
+
+export interface ComposeWithDomains extends ComposeService {
+  domains?: Domain[];
 }

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { api } from '../services/api';
 import { Project, Environment } from '../types';
+import { ensureArray } from '../utils/validation';
 
 interface ProjectState {
   projects: Project[];
@@ -26,10 +27,11 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   fetchProjects: async () => {
     set({ isLoading: true, error: null });
     try {
-      const projects = await api.get<Project[]>('/project.all');
-      set({ projects, isLoading: false });
+      const response = await api.get<Project[]>('/project.all');
+      set({ projects: ensureArray(response), isLoading: false });
     } catch (error: any) {
       set({
+        projects: [],
         error: error.response?.data?.message || 'Failed to fetch projects',
         isLoading: false
       });
@@ -39,10 +41,11 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   fetchEnvironments: async (projectId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const environments = await api.get<Environment[]>(`/environment.byProjectId?projectId=${projectId}`);
-      set({ environments, isLoading: false });
+      const response = await api.get<Environment[]>(`/environment.byProjectId?projectId=${projectId}`);
+      set({ environments: ensureArray(response), isLoading: false });
     } catch (error: any) {
       set({
+        environments: [],
         error: error.response?.data?.message || 'Failed to fetch environments',
         isLoading: false
       });

@@ -12,8 +12,17 @@ Notifications.setNotificationHandler({
   }),
 });
 
+// Check if running in Expo Go
+const isExpoGo = Constants.appOwnership === 'expo';
+
 class NotificationService {
   async registerForPushNotifications(): Promise<string | null> {
+    // Skip push notifications in Expo Go (not supported since SDK 53)
+    if (isExpoGo) {
+      console.log('Push notifications not supported in Expo Go. Use a development build.');
+      return null;
+    }
+
     if (!Device.isDevice) {
       console.warn('Push notifications only work on physical devices');
       return null;
@@ -34,8 +43,8 @@ class NotificationService {
 
     try {
       const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-      if (!projectId) {
-        console.error('Project ID not found');
+      if (!projectId || projectId === 'your-project-id') {
+        console.log('EAS project ID not configured. Push notifications disabled.');
         return null;
       }
 

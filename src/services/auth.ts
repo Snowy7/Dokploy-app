@@ -1,40 +1,39 @@
-import * as SecureStore from 'expo-secure-store';
 import { api } from './api';
 
 export interface User {
   id: string;
   email: string;
+  name?: string;
   firstName?: string;
   lastName?: string;
-  image?: string;
+  image?: string | null;
+  createdAt: string;
+  isRegistered?: boolean;
+  twoFactorEnabled?: boolean | null;
 }
 
 class AuthService {
-  async login(email: string, password: string): Promise<{ user: User; token: string }> {
-    // Note: Adjust this based on actual Dokploy auth endpoint
-    const response = await api.post<{ user: User; token: string }>('/auth/login', {
-      email,
-      password,
-    });
+  async connect(serverUrl: string, apiKey: string, keyName: string = 'Default'): Promise<User> {
+    // Save credentials with key name
+    await api.setCredentials(serverUrl, apiKey, keyName);
 
-    await SecureStore.setItemAsync('auth_token', response.token);
-    await SecureStore.setItemAsync('user', JSON.stringify(response.user));
-
-    return response;
+    // Test connection by fetching user info
+    try {
+      const user = await this.getCurrentUser();
+      return user;
+    } catch (error: any) {
+      // Clear credentials if connection fails
+      await api.clearCredentials();
+      throw error;
+    }
   }
 
   async logout(): Promise<void> {
-    await SecureStore.deleteItemAsync('auth_token');
-    await SecureStore.deleteItemAsync('user');
+    await api.clearCredentials();
   }
 
-  async getStoredUser(): Promise<User | null> {
-    const userStr = await SecureStore.getItemAsync('user');
-    return userStr ? JSON.parse(userStr) : null;
-  }
-
-  async getStoredToken(): Promise<string | null> {
-    return await SecureStore.getItemAsync('auth_token');
+  async isConnected(): Promise<boolean> {
+    return await api.hasCredentials();
   }
 
   async getCurrentUser(): Promise<User> {
